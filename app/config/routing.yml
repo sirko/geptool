@@ -1,0 +1,11 @@
+geptool_main:
+    resource: "@GeptoolMainBundle/Resources/config/routing.yml"
+    prefix:   /main/
+
+geptool_test:
+    resource: "@GeptoolTestBundle/Resources/config/routing.yml"
+    prefix:   /test/
+
+app:
+    resource: "@AppBundle/Controller/"
+    type:     annotation

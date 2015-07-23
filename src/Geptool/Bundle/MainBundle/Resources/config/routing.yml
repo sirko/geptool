@@ -1,0 +1,3 @@
+geptool_main_homepage:
+    path:     /
+    defaults: { _controller: GeptoolMainBundle:Default:index }
