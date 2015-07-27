@@ -1,3 +1,7 @@
 geptool_main_homepage:
     path:     /
     defaults: { _controller: GeptoolMainBundle:Default:index }
+
+geptool_main_testpage:
+    path:     /test
+    defaults: { _controller: GeptoolMainBundle:Default:test }

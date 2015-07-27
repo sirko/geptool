@@ -2,6 +2,7 @@
 namespace  Geptool\Bundle\MainBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as JMS;
 use Geptool\Bundle\MainBundle\Entity\JiraWorklog;
 
 
@@ -10,35 +11,58 @@ use Geptool\Bundle\MainBundle\Entity\JiraWorklog;
  *
  * @ORM\Entity
  * @ORM\Table(name="jira_project")
+ *
+ * @JMS\ExclusionPolicy("all")
  */
 class JiraProject
 {
     /**
      * @ORM\Column(type="integer")
      * @ORM\Id
+     * @JMS\Expose
+     * @JMS\Type("integer")
      */
     protected $id;
 
     /**
      * @ORM\Column(type="string", length=10)
-     *
+     * @JMS\Expose
+     * @JMS\Type("string")
      */
     protected $projectKey;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @JMS\Expose
+     * @JMS\Type("string")
      */
     protected $name;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @JMS\Expose
+     * @JMS\Type("string")
      */
     protected $description;
 
     /**
      * @ORM\OneToMany(targetEntity="JiraWorklog", mappedBy="jiraProject")
+     *
      **/
     protected $jiraWorklogs;
+
+    /**
+     * @var integer Total logged time
+     * @JMS\Expose
+     *
+     */
+    protected $totalSpentTime;
+
+    /**
+     * @var integer Total logged time
+     * @JMS\Expose
+     */
+    protected $totalSpentTimeFormatted;
 
     /**
      * __toString implementation
@@ -47,6 +71,50 @@ class JiraProject
     public function __toString()
     {
         return $this->name;
+    }
+
+    /**
+     * Get total spent time on project
+     * @param string $fromDate <date in "Y-m-d" format>
+     *
+     * @todo add date validation
+     * @return int <time spent by user>
+     */
+    public function getTotalSpentTime($fromDate)
+    {
+        $timeSpent = 0;
+        foreach ($this->jiraWorklogs as $log) {
+            $timeSpent += $log->getTimeSpent();
+        }
+
+        return $timeSpent;
+    }
+
+    /**
+     * Total spent time in "H:i:s" format
+     * @param string $fromDate <date in "Y-m-d" format>
+     *
+     * @return string formatted spent time
+     */
+    public function getTotalSpentTimeFormatted($fromDate)
+    {
+        $timeSpent = $this->getTotalSpentTime($fromDate);
+
+        return sprintf("%02d%s%02d%s%02d", floor($timeSpent/3600), ':', ($timeSpent/60)%60, ':', $timeSpent%60);
+    }
+
+    /**
+     * Fill accumulated properties
+     * @param string $fromDate <date in "Y-m-d" format>
+     *
+     * @return JiraProject
+     */
+    public function setTotalTime($fromDate)
+    {
+        $this->totalSpentTime = $this->getTotalSpentTime($fromDate);
+        $this->totalSpentTimeFormatted = $this->getTotalSpentTimeFormatted($fromDate);
+
+        return $this;
     }
 
     /**
@@ -179,22 +247,6 @@ class JiraProject
     public function getJiraWorklogs()
     {
         return $this->jiraWorklogs;
-    }
-
-    /**
-     * Get total spent time
-     *
-     * @return int [time spent on project]
-     */
-    public function getTotalSpentTime()
-    {
-        $timeSpent = 0;
-        foreach ($this->jiraWorklogs as $log) {
-            $timeSpent += $log->getTimeSpent();
-        }
-
-        return sprintf("%02d%s%02d%s%02d", floor($timeSpent/3600), ':', ($timeSpent/60)%60, ':', $timeSpent%60);
-
     }
 
 }

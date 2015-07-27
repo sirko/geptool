@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="geptoolApp">
+<head>
+    <meta charset="utf-8">
+    <title>Table report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="{{asset('assets/vendor/skeleton/css/normalize.css')}}" />
+    <link rel="stylesheet" href="{{asset('assets/vendor/skeleton/css/skeleton.css')}}" />
+
+    {% stylesheets 'bundles/geptoolmain/css/*' filter='cssrewrite' %}
+        <link rel="stylesheet" href="{{ asset_url }}" />
+    {% endstylesheets %}
+
+    <script src="{{ asset('assets/vendor/angular/angular.js') }}"></script>
+    {% javascripts '@GeptoolMainBundle/Resources/public/js/*' %}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+
+</head>
+<body ng-controller="UsersReportCtrl">
+    <div class="container">
+        {% block body %}{% endblock %}
+    </div>
+</body>
+</html>

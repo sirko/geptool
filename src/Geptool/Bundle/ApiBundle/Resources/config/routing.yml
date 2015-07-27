@@ -1,0 +1,5 @@
+geptool_api_users:
+    type: rest
+    prefix: /v1
+    resource: "Geptool\Bundle\MainBundle\Controller\ApiController"
+    #name_prefix:  api_1_ # naming collision

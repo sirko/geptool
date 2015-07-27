@@ -2,6 +2,7 @@
 namespace  Geptool\Bundle\MainBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as JMS;
 use Geptool\Bundle\MainBundle\Entity\JiraProject;
 use Geptool\Bundle\MainBundle\Entity\JiraUser;
 
@@ -10,34 +11,43 @@ use Geptool\Bundle\MainBundle\Entity\JiraUser;
  *
  * @ORM\Entity
  * @ORM\Table(name="jira_worklog")
+ *
+ * @JMS\ExclusionPolicy("all")
  */
 class JiraWorklog
 {
     /**
      * @ORM\Column(type="integer")
      * @ORM\Id
+     * @JMS\Expose
      */
     protected $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="JiraUser", inversedBy="jiraWorklogs", cascade={"all","merge","persist","refresh","remove"})
      * @ORM\JoinColumn(name="jira_user_id", referencedColumnName="id")
+     *
      **/
     protected $jiraUser;
 
     /**
      * @ORM\ManyToOne(targetEntity="JiraProject", inversedBy="jiraWorklogs", cascade={"all","merge","persist","refresh","remove"})
      * @ORM\JoinColumn(name="jira_project_id", referencedColumnName="id")
+     *
      **/
     protected $jiraProject;
 
     /**
      * @ORM\Column(type="integer")
+     * @JMS\Expose
+     * @JMS\Type("integer")
      */
     protected $timeSpent;
 
     /**
      * @ORM\Column(type="date")
+     * @JMS\Expose
+     * @JMS\Type("DateTime")
      */
     protected $started;
 

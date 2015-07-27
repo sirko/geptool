@@ -2,6 +2,7 @@
 namespace  Geptool\Bundle\MainBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as JMS;
 use Geptool\Bundle\MainBundle\Entity\JiraWorklog;
 
 
@@ -10,6 +11,8 @@ use Geptool\Bundle\MainBundle\Entity\JiraWorklog;
  *
  * @ORM\Entity
  * @ORM\Table(name="jira_user")
+ *
+ * @JMS\ExclusionPolicy("all")
  */
 class JiraUser
 {
@@ -17,42 +20,159 @@ class JiraUser
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
+     * @JMS\Expose
+     * @JMS\Type("integer")
      */
     protected $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     *
+     * @JMS\Expose
+     * @JMS\Type("string")
      */
     protected $userName;
 
     /**
      *
      * @ORM\Column(type="string", length=255)
-     *
+     * @JMS\Expose
+     * @JMS\Type("integer")
      */
     protected $userKey;
 
     /**
      *
      * @ORM\Column(type="string", length=255)
+     * @JMS\Expose
+     * @JMS\Type("string")
      */
     protected $email;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @JMS\Expose
+     * @JMS\Type("string")
      */
     protected $name;
 
     /**
+     * @ORM\Column(type="integer")
+     * @JMS\Expose
+     * @JMS\Type("integer")
+     */
+    protected $capacity;
+
+    /**
      * @ORM\Column(type="boolean")
+     * @JMS\Expose
+     * @JMS\Type("boolean")
      */
     protected $isActive;
 
     /**
      * @ORM\OneToMany(targetEntity="JiraWorklog", mappedBy="jiraUser")
+     *
      **/
     protected $jiraWorklogs;
+
+    /**
+     * @ORM\OneToMany(targetEntity="UserDayoff", mappedBy="jiraUser")
+     *
+     **/
+    protected $daysoff;
+
+    /**
+     * @var integer Total logged time
+     * @JMS\Expose
+     *
+     */
+    protected $totalSpentTime;
+
+
+    /**
+     * @var integer Total logged time,
+     * recalculated taking into account the capacity factor
+     * @JMS\Expose
+     *
+     */
+    protected $totalSpentTimeEffective;
+
+    /**
+     * @var integer Total logged time
+     * @JMS\Expose
+     */
+    protected $totalSpentTimeFormatted;
+
+    /**
+     * @var integer Total logged time
+     * @JMS\Expose
+     */
+    protected $totalSpentTimeEffectiveFormatted;
+
+    /**
+     * @var integer time should be logged by user
+     * @JMS\Expose
+     */
+    protected $neededLoggedTime;
+
+    /**
+     * Get jiraWorklogs
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getJiraWorklogs()
+    {
+        return $this->jiraWorklogs;
+    }
+
+    /**
+     * Get total spent time by user
+     * @param string $fromDate <date in "Y-m-d" format>
+     *
+     * @todo add date validation
+     * @return int <time spent by user>
+     */
+    public function getTotalSpentTime($fromDate)
+    {
+        $timeSpent = 0;
+        foreach ($this->jiraWorklogs as $log) {
+            $timeSpent += $log->getTimeSpent();
+        }
+
+        return $timeSpent;
+    }
+
+    /**
+     * Converts in seconds into "H:i:s" format
+     * @param integer $time seconds
+     *
+     * @return string formatted spent time
+     */
+    public function formatTime($time)
+    {
+        return sprintf("%02d%s%02d%s%02d", floor($time/3600), ':', ($time/60)%60, ':', $time%60);
+    }
+
+    /**
+     * Fill accumulated properties
+     * @param string $fromDate <date in "Y-m-d" format>
+     *
+     * @return JiraUser
+     */
+    public function setTotalTime($fromDate)
+    {
+        $this->totalSpentTime = $this->getTotalSpentTime($fromDate);
+        $this->totalSpentTimeFormatted = $this->formatTime($this->totalSpentTime);
+
+        $capacity = $this->getCapacity() ? $this->getCapacity() : 6;
+
+        $this->totalSpentTimeEffective = $this->totalSpentTime * ($capacity/6);
+        $this->totalSpentTimeEffectiveFormatted = $this->formatTime($this->totalSpentTimeEffective);
+
+        $this->neededLoggedTime = $capacity*18;
+
+        return $this;
+    }
 
     /**
      * Get id
@@ -210,27 +330,58 @@ class JiraUser
     }
 
     /**
-     * Get jiraWorklogs
+     * Set capacity
      *
-     * @return \Doctrine\Common\Collections\Collection
+     * @param integer $capacity
+     * @return JiraUser
      */
-    public function getJiraWorklogs()
+    public function setCapacity($capacity)
     {
-        return $this->jiraWorklogs;
+        $this->capacity = $capacity;
+
+        return $this;
     }
 
     /**
-     * Get total spent time by user
+     * Get capacity
      *
-     * @return int [time spent by user]
+     * @return integer
      */
-    public function getTotalSpentTime()
+    public function getCapacity()
     {
-        $timeSpent = 0;
-        foreach ($this->jiraWorklogs as $log) {
-            $timeSpent += $log->getTimeSpent();
-        }
+        return $this->capacity;
+    }
 
-        return gmdate("H:i:s", $timeSpent);
+    /**
+     * Add daysoff
+     *
+     * @param \Geptool\Bundle\MainBundle\Entity\UserDayoff $daysoff
+     * @return JiraUser
+     */
+    public function addDaysoff(\Geptool\Bundle\MainBundle\Entity\UserDayoff $daysoff)
+    {
+        $this->daysoff[] = $daysoff;
+
+        return $this;
+    }
+
+    /**
+     * Remove daysoff
+     *
+     * @param \Geptool\Bundle\MainBundle\Entity\UserDayoff $daysoff
+     */
+    public function removeDaysoff(\Geptool\Bundle\MainBundle\Entity\UserDayoff $daysoff)
+    {
+        $this->daysoff->removeElement($daysoff);
+    }
+
+    /**
+     * Get daysoff
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getDaysoff()
+    {
+        return $this->daysoff;
     }
 }

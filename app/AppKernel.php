@@ -20,6 +20,10 @@ class AppKernel extends Kernel
             new Geptool\Bundle\JiraApiBundle\JiraApiBundle(),
             new Geptool\Bundle\TestBundle\GeptoolTestBundle(),
             new Geptool\Bundle\MainBundle\GeptoolMainBundle(),
+            new FOS\RestBundle\FOSRestBundle(),
+            new JMS\SerializerBundle\JMSSerializerBundle(),
+            new Nelmio\ApiDocBundle\NelmioApiDocBundle(),
+            new Geptool\Bundle\ApiBundle\GeptoolApiBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {

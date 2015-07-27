@@ -1,0 +1,4 @@
+services:
+#    geptool_api.example:
+#        class: Geptool\Bundle\ApiBundle\Example
+#        arguments: [@service_id, "plain_value", %parameter%]

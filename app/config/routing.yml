@@ -1,3 +1,7 @@
+geptool_api:
+    resource: "@GeptoolApiBundle/Resources/config/routing.yml"
+    prefix:   /api/
+
 geptool_main:
     resource: "@GeptoolMainBundle/Resources/config/routing.yml"
     prefix:   /main/

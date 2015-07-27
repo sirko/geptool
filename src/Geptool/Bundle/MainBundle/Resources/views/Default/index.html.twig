@@ -1,20 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Simple users/project report</title>
-</head>
-<body>
-    <h2>Projects!</h2>
-    <ol>
-        {% for project in jira_projects if project.getJiraWorklogs().count() %}
-        <li>{{project.name}} - {{project.getTotalSpentTime()}}</li>
-        {% endfor %}
-    </ol>
-    <h2>Users!</h2>
-    <ol>
-        {% for user in jira_users if user.getJiraWorklogs().count()  %}
-        <li>{{user.name}} - {{user.getTotalSpentTime()}}</li>
-        {% endfor %}
-    </ol>
-</body>
-</html>
+{% extends 'GeptoolMainBundle::layout.html.twig' %}
+{% block body %}
+    <table u-full-width>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Real worked</th>
+                <th>Effective hours</th>
+                <th>Needed hours</th>
+            </tr>
+        </thead>
+        <tr ng-repeat="user in users | orderBy:'-total_spent_time_effective'"
+            ng-class="{
+                red: user.total_spent_time_effective < user.needed_logged_time*3600,
+                green: user.total_spent_time_effective > user.needed_logged_time*3600,
+                white: user.total_spent_time_effective == user.needed_logged_time*3600,
+                yellow: user.total_spent_time_effective == 0,
+            }">
+            <td>{{'{{user.name}}'}}</td>
+            <td>{{'{{user.total_spent_time_formatted}}'}}</td>
+            <td>{{'{{user.total_spent_time_effective_formatted}}'}}</td>
+            <td>{{'{{user.needed_logged_time}}'}}</td>
+        </tr>
+    </table>
+{% endblock %}
